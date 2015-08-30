@@ -38,7 +38,8 @@ class InverseCamBroadcaster:
         f = open("/home/davinci2/catkin_ws/src/davinci_vision/launch/BC_registration/camera_frame.p", "rb")
         self.camera_transform = pickle.load(f)
         f.close()
-        offset = tfx.transform([0, 0, CAP_OFFSET], [[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+        #SOMETIMES NEED TO INVERT X & Y AXES; just change from 1 to -1 and vice versa
+        offset = tfx.transform([0, 0, CAP_OFFSET], [[-1, 0, 0], [0, -1, 0], [0, 0, 1]])
         self.camera_transform = tfx.transform(self.camera_transform).as_transform() * offset
         transform = tfx.inverse_tf(self.camera_transform)
         pt = transform.translation

@@ -111,13 +111,21 @@ class RoboRegistration:
         rospy.Subscriber(pose_topic, PoseStamped, self.record_pose_callback)   
         rospy.Subscriber("/BC/chessboard_pose", PoseStamped, self.get_transform_callback)
 
-        while not self.have_camera_transform and not rospy.is_shutdown():
-            print("Waiting for camera transform")
-            rospy.sleep(0.5)
-        print("Saving camera transform in file")
-        f = open("/home/davinci2/catkin_ws/src/davinci_vision/launch/BC_registration/camera_frame.p", "wb")
-        pickle.dump(self.camera_transform, f)
-        f.close()
+        save_camera_transform = raw_input("Do you want to save a new camera transform? (yes/no) ")
+
+        if save_camera_transform == "yes":
+            while not self.have_camera_transform and not rospy.is_shutdown():
+                print("Waiting for camera transform")
+                rospy.sleep(0.5)
+            print("Saving camera transform in file")
+            f = open("/home/davinci2/catkin_ws/src/davinci_vision/launch/BC_registration/camera_frame.p", "wb")
+            pickle.dump(self.camera_transform, f)
+            f.close()
+        else:
+            f = open("/home/davinci2/catkin_ws/src/davinci_vision/launch/BC_registration/camera_frame.p", "rb")
+            self.camera_transform = pickle.load(f)
+            f.close()
+
         raw_input("Remove chessboard; press any key when done")
         cols = int(raw_input("Enter number of columns on registration block: "))
         rows = int(raw_input("Enter number of rows on registration block: "))
@@ -125,11 +133,12 @@ class RoboRegistration:
         #will have to do both grippers
         print("Please start at top left corner and go row by row, moving from left to right. Use " + self.arm + \
             " gripper")
+        print("First coordinate is x, second is y; (0, 0) is top left corner")
         # cols_even = cols % 2 == 0
         # rows_even = rows % 2 == 0
         for j in range(rows):
             for i in range(cols):
-                command = raw_input("Press r to record current pose: ")
+                command = raw_input("Press r to record current pose (cell " + str(i) + ", " + str(j) + "): ")
                 if command == "r":
                     self.recording_pose = True
                     print("Pose recorded!")
@@ -153,9 +162,19 @@ class RoboRegistration:
         rospy.init_node('robo_registration', anonymous=True)
         rospy.Subscriber("/BC/chessboard_pose", PoseStamped, self.get_transform_callback)
 
-        while not self.have_camera_transform and not rospy.is_shutdown():
-            print("Waiting for camera transform")
-            rospy.sleep(0.5)
+        save_camera_transform = raw_input("Do you want to save a new camera transform? (yes/no) ")
+        if save_camera_transform == "yes":
+            while not self.have_camera_transform and not rospy.is_shutdown():
+                print("Waiting for camera transform")
+                rospy.sleep(0.5)
+            print("Saving camera transform in file")
+            f = open("/home/davinci2/catkin_ws/src/davinci_vision/launch/BC_registration/camera_frame.p", "wb")
+            pickle.dump(self.camera_transform, f)
+            f.close()
+        else:
+            f = open("/home/davinci2/catkin_ws/src/davinci_vision/launch/BC_registration/camera_frame.p", "rb")
+            self.camera_transform = pickle.load(f)
+            f.close()
 
         f = open('pose_data_' + self.arm + '.p', 'rb')
         data = pickle.load(f)
@@ -274,6 +293,7 @@ class RoboRegistration:
         # I'll just take the average of the rows and average of the columns...
         transform = tfx.pose(point, [[xa[0], ya[0], za[0]],[xa[1], ya[1], za[1]],[xa[2], ya[2], za[2]]])
         # transform.translation.z += CAP_OFFSET
+
         f = open("/home/davinci2/catkin_ws/src/davinci_vision/launch/BC_registration/robot_transform_" + self.arm +\
             ".p", "wb")
         pickle.dump(transform, f)
