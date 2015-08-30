@@ -1,0 +1,9 @@
+<launch>
+  <arg name="transform" default="0 0 0 0 0 0 0" />
+  <!-- <param name="transform" textfile="$(find davinci_vision)/launch/BC_registration/transform.txt" /> -->
+  <rosparam command="load" file="$(find davinci_vision)/launch/BC_registration/transform.yaml" />
+  <rosparam param="transform" subst_value="True">$(arg transform)</rosparam>
+
+  <node pkg="tf" type="static_transform_publisher" name="left_BC2twobaselink" args="$(arg transform) left_BC two_psm_base_link 1000" />
+
+</launch>

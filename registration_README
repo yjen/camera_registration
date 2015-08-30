@@ -1,0 +1,14 @@
+TLDR: to register cameras to robot frame, run registration_new.sh
+
+wrote chessboard2.launch in raven_2_vision
+
+should probably put the rospy.is_shutdown in all files
+
+registration_new.sh launches the cameras' chessboard recognition modules, publishes frame to /BC/chessboard, robo_registration
+
+robo_registration.py allows user to teleop the dvrk and record poses, which it uses to find pose of chessboard in robot frame (need to do for each arm separately); save pose data in pose_data_left/right.p and combines robot frame chessboard pose with /BC/chessboard to find transform from camera to robot; saves in transform_left/right.txt
+
+camera_to_robot_broadcaster broadcasts transforms in transform_left/right.txt
+
+note that I commented out the ROSINFO lines in chessboard_tracker
+also after registration is finished, use ps -e; kill ___ (find chessboard_trac) to get rid of the chessboard tracker windows. finally, run camera_to_robot_broadcaster
