@@ -19,7 +19,7 @@ class RobotBroadcaster:
         self.pub = rospy.Publisher("/tf", tfMessage, queue_size=1, latch=True)
 
         f = open("/home/davinci2/catkin_ws/src/davinci_vision/launch/BC_registration/robot_transform_" + self.arm + \
-            ".p", "r")
+            "_good.p", "r")
         p = pickle.load(f)
         f.close()
 
@@ -46,8 +46,10 @@ class RobotBroadcaster:
         msg.transform.translation.z = pt.z
         if self.arm == 'left':
             msg.header.frame_id = "one_remote_center_link"
+            msg.child_frame_id = "registration_brick"
         else:
             msg.header.frame_id = "two_remote_center_link"
+            msg.child_frame_id = "registration_brick_right"
             # ???
         while not rospy.is_shutdown():
                 msg.header.stamp = rospy.Time.now()

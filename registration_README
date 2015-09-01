@@ -1,5 +1,7 @@
 lol need to rewrite all of this...
 
+move chessboard2.launch to davinci_vision?
+
 files we actually run now: robo_registration.py, registration_new.sh, inverse_camera_broadcaster.py, robot_broadcaster_left.py, robot_broadcaster_right.py, (should probably move stuff from raven_2_vision here)
 
 

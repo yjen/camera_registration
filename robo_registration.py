@@ -42,6 +42,7 @@ class RoboRegistration:
 
     def record_pose_callback(self, data):
         if self.recording_pose:
+            print(data)
             self.pose_data.append(data)
             #print(str(time.clock()) + 'pose')
             self.recording_pose = False
@@ -111,6 +112,8 @@ class RoboRegistration:
         rospy.Subscriber(pose_topic, PoseStamped, self.record_pose_callback)   
         rospy.Subscriber("/BC/chessboard_pose", PoseStamped, self.get_transform_callback)
 
+        
+
         save_camera_transform = raw_input("Do you want to save a new camera transform? (yes/no) ")
 
         if save_camera_transform == "yes":
@@ -136,13 +139,26 @@ class RoboRegistration:
         print("First coordinate is x, second is y; (0, 0) is top left corner")
         # cols_even = cols % 2 == 0
         # rows_even = rows % 2 == 0
+        
+        # wrist_poses = []
+
         for j in range(rows):
             for i in range(cols):
                 command = raw_input("Press r to record current pose (cell " + str(i) + ", " + str(j) + "): ")
                 if command == "r":
                     self.recording_pose = True
                     print("Pose recorded!")
+                    # wrist_poses.append(tfx.lookupTransform("two_tool_wrist_sca_shaft_link", "two_remote_center_link").msg.PoseStamped())
+                
 
+                # b = tfx.pose(transform)
+                # b.name = None
+                # b.as_tf() * self.pose_data[0]
+                
+        #LOLMAGICNUMBER        
+        offset = tfx.transform([0, 0, -0.00483], [[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+        trans_data = [tfx.pose(tfx.pose(pose).as_tf() * offset).msg.PoseStamped() for pose in self.pose_data]
+        self.pose_data = trans_data
         # while not self.done_recording:
         #     command = raw_input("Press r to record current pose or q to finish: ")
         #     if command == "r":
@@ -150,15 +166,36 @@ class RoboRegistration:
         #         print("Pose recorded!")
         #     elif command == "q":
         #         self.done_recording = True
+        
+        # b = tfx.pose(transform)
+        # b.name = None
+        # b = b.as_tf()
+
+        # transformed_pose_data = [b * pose for pose in self.pose_data]
+
+        # transform = tfx.lookupTransform("two_tool_base_link", "two_tool_middle_link")
+        # b = tfx.pose(transform)
+        # b.name = None
+        # b = b.as_tf()
+
+        # transformed_pose_data = [(b * pose) for pose in self.pose_data]
 
         f = open('pose_data_' + self.arm + '.p', 'wb')
         pickle.dump([dimensions, self.pose_data], f)
         f.close()
+        # f = open('pose_data_wrist_' + self.arm + '.p', 'wb')
+        # pickle.dump([dimensions, wrist_poses], f)
+        # f.close()
+        
         self.calculate(dimensions)
+        # self.pose_data = wrist_poses
+        # self.calculate(dimensions)
 
         rospy.spin()
 
     def open_from_file(self):
+        # pose_topic = "dvrk_psm1/joint_position_cartesian"
+        # rospy.Subscriber(pose_topic, PoseStamped, self.record_pose_callback)   
         rospy.init_node('robo_registration', anonymous=True)
         rospy.Subscriber("/BC/chessboard_pose", PoseStamped, self.get_transform_callback)
 
@@ -176,11 +213,92 @@ class RoboRegistration:
             self.camera_transform = pickle.load(f)
             f.close()
 
+        # f = open('pose_data_transform_' + self.arm + '.p', 'rb')
+        # test = pickle.load(f)
+        # f.close()
+        # print(test)
+        # import IPython; IPython.embed()
+        # transform = tfx.lookupTransform("two_tool_wrist_sca_shaft_link", "two_remote_center_link")
         f = open('pose_data_' + self.arm + '.p', 'rb')
         data = pickle.load(f)
         dimensions = data[0]
         self.pose_data = data[1]
+        print(self.pose_data)
+        print(dimensions)
         f.close()
+
+        # transform = tfx.lookupTransform("two_tool_base_link", "two_tool_middle_link")
+        # b = tfx.pose(transform)
+        # b.name = None
+        # b = b.as_tf()
+
+        # trans_data = [tfx.pose(tfx.pose(pose).as_tf() * b).msg.PoseStamped() for pose in self.pose_data]
+
+
+        # b = tfx.pose(transform)
+        # b.name = None
+        # b = b.as_tf()
+
+        # transformed_pose_data = [b * pose for pose in self.pose_data]
+        # transformed_pose_data = [pose.msg.PoseStamped() for pose in transformed_pose_data]
+
+        # self.pose_data = transformed_pose_data
+        
+
+
+
+
+
+        # self.pose_data = []
+        
+
+
+        # a = "a"
+        # while a == "a":
+        #     # wrist_poses.append(tfx.lookupTransform("two_tool_wrist_sca_shaft_link", "two_remote_center_link").msg.PoseStamped())
+        #     # wrist_poses.append(tfx.lookupTransform("two_tool_middle_link", "two_remote_center_link").msg.PoseStamped())
+        #     # tfx.lookupTransform("two_tool_middle_link", "two_remote_center_link")
+        #     # tfx.lookupTransform("two_tool_middle_link", "two_remote_center_link")
+        #     self.recording_pose = True
+        #     # wrist_poses.append(tfx.lookupTransform("two_remote_center_link", "world").msg.PoseStamped())
+        #     # print(tfx.lookupTransform("two_tool_wrist_sca_shaft_link", "two_remote_center_link"))
+        #     # print(tfx.lookupTransform("two_tool_wrist_sca_shaft_link", "two_remote_center_link").msg.PoseStamped())
+        #     a = raw_input("hi")
+
+        # # trans_data = [(b * pose).msg.PoseStamped() for pose in self.pose_data]
+        # offset = tfx.transform([0, 0, -0.00483], [[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+        # trans_data = [tfx.pose(tfx.pose(pose).as_tf() * offset).msg.PoseStamped() for pose in self.pose_data]
+        # import IPython; IPython.embed()
+        # plt3d = plt.figure().gca(projection='3d')
+        # x = []
+        # y = []
+        # z = []
+        # for pose in trans_data:
+        #     x.append(pose.pose.position.x)
+        #     y.append(pose.pose.position.y)
+        #     z.append(pose.pose.position.z)
+        # x = np.array(x)
+        # y = np.array(y)
+        # z = np.array(z)
+        # data = np.concatenate((x[:, np.newaxis], y[:, np.newaxis], z[:, np.newaxis]), axis=1)
+        # plt3d.scatter3D(*data.T, c='red')
+        # x1 = []
+        # y1 = []
+        # z1 = []
+        # for pose in self.pose_data:
+        #     x1.append(pose.pose.position.x)
+        #     y1.append(pose.pose.position.y)
+        #     z1.append(pose.pose.position.z)
+        # x1 = np.array(x1)
+        # y1 = np.array(y1)
+        # z1 = np.array(z1)
+        # data1 = np.concatenate((x1[:, np.newaxis], y1[:, np.newaxis], z1[:, np.newaxis]), axis=1)
+        # plt3d.scatter3D(*data1.T, c='blue')
+        # # for pose in self.pose_data:
+        # #     plt3d.plot(pose.pose.position.x, pose.pose.position.y, pose.pose.position.z)
+        # plt.show()
+        # import IPython; IPython.embed()
+
         self.calculate(dimensions)
 
     def calculate(self, dimensions):
@@ -283,6 +401,7 @@ class RoboRegistration:
 
         # for pose in self.pose_data:
         #     plt3d.plot(pose.pose.position.x, pose.pose.position.y, pose.pose.position.z)
+        # plt.axis([0, 1000, 0, 12000])
         plt.show()
         xa = mean_row_vector
         # xa = -xa
@@ -306,6 +425,7 @@ class RoboRegistration:
         print(camera_transform)
         final_transform = tfx.inverse_tf(camera_transform).as_transform() * transform
         # why doesn't this work......
+        # maybe this should be the inverse lol
         # final_transform = tfx.inverse_tf(final_transform)
         print(final_transform)
         pt = final_transform.translation

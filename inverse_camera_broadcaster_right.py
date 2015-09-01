@@ -9,7 +9,8 @@ import tfx
 import pickle
 import sys
 
-CAP_OFFSET = -0.011#-0.00264
+CAP_OFFSET = -0.009#-0.011#-0.00264
+SKETCH_OFFSET = 0#-0.011
 
 class InverseCamBroadcaster:
     def __init__(self):
@@ -39,7 +40,7 @@ class InverseCamBroadcaster:
         self.camera_transform = pickle.load(f)
         f.close()
         #SOMETIMES NEED TO INVERT X & Y AXES; just change from 1 to -1 and vice versa
-        offset = tfx.transform([0, 0, CAP_OFFSET], [[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+        offset = tfx.transform([SKETCH_OFFSET, 0, CAP_OFFSET], [[1, 0, 0], [0, 1, 0], [0, 0, 1]])
         self.camera_transform = tfx.transform(self.camera_transform).as_transform() * offset
         transform = tfx.inverse_tf(self.camera_transform)
         pt = transform.translation
@@ -54,7 +55,7 @@ class InverseCamBroadcaster:
         msg.transform.translation.x = pt.x
         msg.transform.translation.y = pt.y
         msg.transform.translation.z = pt.z
-        msg.header.frame_id = "registration_brick"
+        msg.header.frame_id = "registration_brick_right"
         msg.header.stamp = rospy.Time.now()
         print('boo')
         while not rospy.is_shutdown():
